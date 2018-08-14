@@ -24,7 +24,7 @@ void initialiseBarGraph(){
 }
 /**
  * Displays a value on an 8 bit LED bar
- * @param level - the level to display i.e. numbe rof active LED's (0-8)
+ * @param level - the level to display i.e. number of active LED's (0-8)
  */
 void barGraph(int level){
 	for (int i = 0; i < 8; i++){
@@ -33,9 +33,11 @@ void barGraph(int level){
 			SRData::write(1);
 		}
 
-		SRClk::write(1);
+		SRClk::high();
+		SRClk::low();
 	}
-	HRClk::write(1);
+	HRClk::high();
+	HRClk::low();
 }
 
 int main() {
