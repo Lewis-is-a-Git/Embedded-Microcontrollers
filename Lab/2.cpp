@@ -51,6 +51,7 @@ int main() {
 
 		int level = 4; //just cause
 		barGraph(level);
+		waitMS(100);
 
 		console.write("The level is: ").writeln(level);
 	}
