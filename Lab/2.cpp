@@ -32,6 +32,9 @@ void barGraph(int level){
 		if (i < level){
 			SRData::write(1);
 		}
+		else {
+			SRData::write(0);
+		}
 
 		SRClk::high();
 		SRClk::low();
