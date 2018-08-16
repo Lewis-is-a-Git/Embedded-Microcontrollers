@@ -26,18 +26,19 @@ void initialiseBarGraph(){
  * Displays a value on an 8 bit LED bar
  * @param level - the level to display i.e. number of active LED's (0-8)
  */
-void barGraph(int level){
+void barGraph(int chase){
+
 	for (int i = 0; i < 8; i++){
 
-		if (i < level){
+		if (i == chase){
 			SRData::write(1);
-		}
-		else {
+		}else {
 			SRData::write(0);
 		}
 
 		SRClk::high();
 		SRClk::low();
+
 	}
 	HRClk::high();
 	HRClk::low();
@@ -46,14 +47,17 @@ void barGraph(int level){
 int main() {
 
 	initialiseBarGraph();
-
+	int chase = 0;
 	for(;;) {
 
-		int level = 4; //just cause
-		barGraph(level);
+		barGraph(chase);
+		chase++;
+		if (chase > 7){
+			chase = 0;
+		}
 		waitMS(100);
 
-		console.write("The level is: ").writeln(level);
+		console.write("The level is: ").writeln(chase);
 	}
 	return 0;
 }
