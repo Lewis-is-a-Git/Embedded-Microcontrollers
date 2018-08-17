@@ -2,14 +2,14 @@
 
 using namespace USBDM;
 
-using SRData    = GpioC<4>;
-using SRClk    = GpioC<3>;
-using HRClk    = GpioA<1>;
+using SER    = GpioD<1>;
+using SRClk    = GpioD<3>;
+using HRClk    = GpioD<2>;
 /**
  * Initialise the bar Graph system
  */
 void initialiseBarGraph(){
-	SRData::setOutput(
+	SER::setOutput(
 			PinDriveStrength_High,
 			PinDriveMode_PushPull,
 			PinSlewRate_Slow);
@@ -26,14 +26,14 @@ void initialiseBarGraph(){
  * Displays a value on an 8 bit LED bar
  * @param level - the level to display i.e. number of active LED's (0-8)
  */
-void barGraph(int chase){
+void barGraph(int level){
 
 	for (int i = 0; i < 8; i++){
-
-		if (i == chase){
-			SRData::write(1);
+		//only the first sevel leds light up
+		if (i < level){
+			SER::write(1);
 		}else {
-			SRData::write(0);
+			SER::write(0);
 		}
 
 		SRClk::high();
@@ -47,17 +47,17 @@ void barGraph(int chase){
 int main() {
 
 	initialiseBarGraph();
-	int chase = 0;
+	int level = 0;
 	for(;;) {
 
-		barGraph(chase);
-		chase++;
-		if (chase > 7){
-			chase = 0;
+		barGraph(level);
+		level++;
+		if (level > 7){
+			level = 0;
 		}
 		waitMS(100);
 
-		console.write("The level is: ").writeln(chase);
+		console.write("The level is: ").writeln(level);
 	}
 	return 0;
 }
