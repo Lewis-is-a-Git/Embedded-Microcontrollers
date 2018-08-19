@@ -3,8 +3,8 @@
  * @file    main.cpp (180.ARM_Peripherals/Sources/main.cpp)
  * @brief   Basic C++ demo
  *
- *  Created on: 10/1/2016
- *      Author: podonoghue
+ *  Created on: 19/8/2018
+ *      Author: lewis
  ============================================================================
  */
 #include "hardware.h"
@@ -13,9 +13,9 @@
 using namespace USBDM;
 
 // LED connection - change as required
-using Led1   = GpioD<5>;
-using Led2  = GpioB<1>;
-using Led3  = GpioB<0>;
+using Led1   = GpioD<1>;
+using Led2  = GpioD<3>;
+using Led3  = GpioD<2>;
 
 /*
  * Initialise the Charlieplexed system
@@ -32,29 +32,32 @@ void initialiseCharlieplexing(){
  *
  */
 void setLED(int ledNum){
+	Led1::setOut();
+	Led2::setOut();
+	Led3::setOut();
 	switch(ledNum) {
 	case 1  :
 		Led1::high();
-		Led2::setInactive();
+		Led2::setIn();
 		Led3::low();
 	case 2  :
 		Led1::low();
-		Led2::setInactive();
+		Led2::setIn();
 		Led3::high();
 	case 3  :
 		Led1::high();
 		Led2::low();
-		Led3::setInactive();
+		Led3::setIn();
 	case 4  :
 		Led1::low();
 		Led2::high();
-		Led3::setInactive();
+		Led3::setIn();
 	case 5  :
-		Led1::setInactive();
+		Led1::setIn();
 		Led2::high();
 		Led3::low();
 	case 6  :
-		Led1::setInactive();
+		Led1::setIn();
 		Led2::low();
 		Led3::high();
 	default : //Optional
@@ -62,6 +65,7 @@ void setLED(int ledNum){
 		Led2::low();
 		Led3::low();
 	}
+
 }
 
 int main() {
