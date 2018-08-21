@@ -3,7 +3,7 @@
  * @file    main.cpp (180.ARM_Peripherals/Sources/main.cpp)
  * @brief   Basic C++ demo
  *
- *  Created on: 19/8/2018
+ *  Created on: 20/8/18
  *      Author: lewis
  ============================================================================
  */
@@ -13,17 +13,16 @@
 using namespace USBDM;
 
 // LED connection - change as required
-using Led1   = GpioD<1>;
-using Led2  = GpioD<3>;
-using Led3  = GpioD<2>;
+using Leds = GpioDField<3, 1>;
+
+using Adc = Adc0;
+using Voltimeter = Adc0Channel<7>;
 
 /*
  * Initialise the Charlieplexed system
  */
 void initialiseCharlieplexing(){
-	Led1::setOutput(PinDriveStrength_High, PinDriveMode_PushPull, PinSlewRate_Slow);
-	Led2::setOutput(PinDriveStrength_High, PinDriveMode_PushPull, PinSlewRate_Slow);
-	Led3::setOutput(PinDriveStrength_High, PinDriveMode_PushPull, PinSlewRate_Slow);
+	Leds::setOutput(PinDriveStrength_High, PinDriveMode_PushPull, PinSlewRate_Slow);
 }
 /*
  * Turn on the given LED
@@ -31,54 +30,63 @@ void initialiseCharlieplexing(){
  * @param ledNum LED to turn on (1..6)
  *
  */
-void setLED(int ledNum){
-	Led1::setOut();
-	Led2::setOut();
-	Led3::setOut();
-	switch(ledNum) {
+void setLED(int led){
+	//TODO: write(0b110) //use table driven program not this case statement
+	//TODO: setDirection(0b101) or whatever values needed, which one is out and in?
+	//TODO: look at gpio field functions
+	//Leds::setDirection(0b111);
+	//Leds::write(0b000);
+	switch(led) {
 	case 1  :
-		Led1::high();
-		Led2::setIn();
-		Led3::low();
+		Leds::setDirection(0b101);
+		Leds::write(0b100);
 	case 2  :
-		Led1::low();
-		Led2::setIn();
-		Led3::high();
+		Leds::setDirection(0b101);
+		Leds::write(0b001);
 	case 3  :
-		Led1::high();
-		Led2::low();
-		Led3::setIn();
+		Leds::setDirection(0b110);
+		Leds::write(0b100);
 	case 4  :
-		Led1::low();
-		Led2::high();
-		Led3::setIn();
+		Leds::setDirection(0b110);
+		Leds::write(0b010);
 	case 5  :
-		Led1::setIn();
-		Led2::high();
-		Led3::low();
+		Leds::setDirection(0b011);
+		Leds::write(0b010);
 	case 6  :
-		Led1::setIn();
-		Led2::low();
-		Led3::high();
-	default : //Optional
-		Led1::low();
-		Led2::low();
-		Led3::low();
+		Leds::setDirection(0b011);
+		Leds::write(0b001);
 	}
 
 }
 
+/*
+ * Initialisation of analogue to digital converter
+ */
+void initADC(){
+	Adc::configure(AdcResolution_12bit_se, AdcClockSource_Bus, AdcClockDivider_2);
+	Adc::calibrate();
+	Adc::setAveraging(AdcAveraging_4);
+}
+
 int main() {
 
-	void initialiseCharlieplexing();
+	initialiseCharlieplexing();
 
 	for(int ledNum = 1;;ledNum++) {
+		//Part 1
 		if (ledNum > 6){
 			ledNum = 1;
 		}
+		//TODO: part 1 needs to be redone
 		setLED(ledNum);
 		waitMS(100);
 		console.write("The led is ").writeln(ledNum);
+
+		//Part 2
+		initADC();
+		double Level = Voltimeter::readAnalogue();
+		double Voltage = Level * 33/40960;
+		console.write("ADC Channel 7b = ").write(Voltage).writeln("V.");
 	}
 	return 0;
 }
