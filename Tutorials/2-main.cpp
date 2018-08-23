@@ -12,7 +12,7 @@
 // Allow access to USBDM methods without USBDM:: prefix
 using namespace USBDM;
 
-// LED connection - change as required
+//declare pins used
 using Led   = GpioC<1,ActiveHigh>;
 using Button = GpioD<5, ActiveLow>;
 
