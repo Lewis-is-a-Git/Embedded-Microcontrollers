@@ -29,7 +29,7 @@ void adcInit(){
 
 int main() {
 	//set initial variables
-	adcInit();
+	adcInit(); //innitailse adc first
 	double SetTemp = 20; //initial temperature is set to 20
 	Led::setOutput();
 
