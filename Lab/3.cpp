@@ -28,7 +28,7 @@ void initialiseCharlieplexing(){
 /*
  * Turn on the given LED
  *
- * @param ledNum LED to turn on (1..6)
+ * @param led LED to turn on (1..6)
  *
  */
 void setLED(unsigned led){
@@ -47,12 +47,12 @@ void setLED(unsigned led){
 			0b010,
 			0b001};
 	if (led == 0){
-		Leds::setDirection(0b000);
+		Leds::setDirection(0b111);
 		Leds::write(0b000);
 	}
-	if (led < 6){
-		Leds::setDirection(direction[led + 1]);
-		Leds::write(write[led + 1]);
+	if (led < 7){
+		Leds::setDirection(direction[led - 1]);
+		Leds::write(write[led - 1]);
 	}
 
 
@@ -76,10 +76,10 @@ int main() {
 		if (ledNum > 6){
 			ledNum = 1;
 		}
-		//TODO: part 1 needs to be redone
-		setLED(ledNum);
-		waitMS(100);
-		console.write("The led is ").writeln(ledNum);
+		//cycle Leds
+		//setLED(ledNum);
+//		waitMS(100);
+//		console.write("The led is ").writeln(ledNum);
 
 		//Part 2
 		initADC();
@@ -89,7 +89,7 @@ int main() {
 
 		//Part 3
 		int ledDisplay = round(Level * 60/40960);
-		//setLED(ledDisplay);
+		setLED(ledDisplay);
 		console.write("The Led to display is ").writeln(ledDisplay);
 
 	}
