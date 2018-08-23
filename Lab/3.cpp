@@ -8,6 +8,7 @@
  ============================================================================
  */
 #include "hardware.h"
+#include <cmath>
 
 // Allow access to USBDM methods without USBDM:: prefix
 using namespace USBDM;
@@ -30,32 +31,30 @@ void initialiseCharlieplexing(){
  * @param ledNum LED to turn on (1..6)
  *
  */
-void setLED(int led){
-	//TODO: write(0b110) //use table driven program not this case statement
-	//TODO: setDirection(0b101) or whatever values needed, which one is out and in?
-	//TODO: look at gpio field functions
-	//Leds::setDirection(0b111);
-	//Leds::write(0b000);
-	switch(led) {
-	case 1  :
-		Leds::setDirection(0b101);
-		Leds::write(0b100);
-	case 2  :
-		Leds::setDirection(0b101);
-		Leds::write(0b001);
-	case 3  :
-		Leds::setDirection(0b110);
-		Leds::write(0b100);
-	case 4  :
-		Leds::setDirection(0b110);
-		Leds::write(0b010);
-	case 5  :
-		Leds::setDirection(0b011);
-		Leds::write(0b010);
-	case 6  :
-		Leds::setDirection(0b011);
-		Leds::write(0b001);
+void setLED(unsigned led){
+	static const unsigned direction[6] = {
+			0b101,
+			0b101,
+			0b110,
+			0b110,
+			0b011,
+			0b011};
+	static const unsigned write[6] = {
+			0b100,
+			0b001,
+			0b100,
+			0b010,
+			0b010,
+			0b001};
+	if (led == 0){
+		Leds::setDirection(0b000);
+		Leds::write(0b000);
 	}
+	if (led < 6){
+		Leds::setDirection(direction[led + 1]);
+		Leds::write(write[led + 1]);
+	}
+
 
 }
 
@@ -87,6 +86,12 @@ int main() {
 		double Level = Voltimeter::readAnalogue();
 		double Voltage = Level * 33/40960;
 		console.write("ADC Channel 7b = ").write(Voltage).writeln("V.");
+
+		//Part 3
+		int ledDisplay = round(Level * 60/40960);
+		//setLED(ledDisplay);
+		console.write("The Led to display is ").writeln(ledDisplay);
+
 	}
 	return 0;
 }
