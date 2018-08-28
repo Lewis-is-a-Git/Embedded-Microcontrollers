@@ -1,14 +1,11 @@
 /*
  ============================================================================
  * @file    main.cpp (180.ARM_Peripherals/Sources/main.cpp)
- * @brief   Basic C++ demo
- *
- *  Created on: 20/8/18
- *      Author: lewis
+ * @brief   charlieplexing and ADC
  ============================================================================
  */
 #include "hardware.h"
-#include <cmath>
+#include <cmath> //round
 
 // Allow access to USBDM methods without USBDM:: prefix
 using namespace USBDM;
@@ -23,7 +20,7 @@ using Voltimeter = Adc0Channel<7>;
  * Initialise the Charlieplexed system
  */
 void initialiseCharlieplexing(){
-	Leds::setOutput(PinDriveStrength_High, PinDriveMode_PushPull, PinSlewRate_Slow);
+	Leds::setInOut(PinPull_Up, PinDriveStrength_High);
 }
 /*
  * Turn on the given LED
@@ -31,31 +28,29 @@ void initialiseCharlieplexing(){
  * @param led LED to turn on (1..6)
  *
  */
-void setLED(unsigned led){
+void setLed(unsigned led){
 	static const unsigned direction[6] = {
 			0b101,
 			0b101,
 			0b110,
 			0b110,
 			0b011,
-			0b011};
+			0b011
+	};
 	static const unsigned write[6] = {
 			0b100,
 			0b001,
 			0b100,
 			0b010,
 			0b010,
-			0b001};
-	if (led == 0){
-		Leds::setDirection(0b111);
-		Leds::write(0b000);
-	}
-	if (led < 7){
-		Leds::setDirection(direction[led - 1]);
-		Leds::write(write[led - 1]);
-	}
+			0b001
+	};
 
+	if (led <= 5){
+		Leds::write(write[led]);
+		Leds::setDirection(direction[led]);
 
+	}
 }
 
 /*
@@ -71,27 +66,26 @@ int main() {
 
 	initialiseCharlieplexing();
 
-	for(int ledNum = 1;;ledNum++) {
-		//Part 1
-		if (ledNum > 6){
-			ledNum = 1;
-		}
-		//cycle Leds
-		//setLED(ledNum);
-//		waitMS(100);
-//		console.write("The led is ").writeln(ledNum);
+	for (;;)
+	{
+		//Part 1: cycle LEDs
+//		for (int i = 0; i < 6; i++)
+//		{
+//			setLed(i);
+//			waitMS(100);
+//		}
 
-		//Part 2
+		//Part 2: ADC
 		initADC();
 		double Level = Voltimeter::readAnalogue();
-		double Voltage = Level * 33/40960;
+		double Voltage = Level * 33 / 40960;
 		console.write("ADC Channel 7b = ").write(Voltage).writeln("V.");
 
-		//Part 3
-		int ledDisplay = round(Level * 60/40960);
-		setLED(ledDisplay);
+		//Part 3: Integration
+		int ledDisplay = round(Level * 5 / 4096);
+		setLed(ledDisplay);
 		console.write("The Led to display is ").writeln(ledDisplay);
-
+		waitMS(100);
 	}
 	return 0;
 }
