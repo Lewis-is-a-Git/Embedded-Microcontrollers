@@ -1,10 +1,17 @@
+/*
+ *  main.cpp
+ *  Mainline for Shift Register bar graph
+ *
+ *      Author: lewis
+ */
+
 #include "hardware.h"
 
 using namespace USBDM;
-
-using SER    = GpioD<1>;
-using SRClk    = GpioD<3>;
-using HRClk    = GpioD<2>;
+//IO
+using SER    = GpioD<1>; //serial input
+using SRClk    = GpioD<3>; //shift register clock
+using HRClk    = GpioD<2>; //holding register clock
 /**
  * Initialise the bar Graph system
  */
@@ -27,7 +34,7 @@ void initialiseBarGraph(){
  * @param level - the level to display i.e. number of active LED's (0-8)
  */
 void barGraph(int level){
-
+	//loop to set each led
 	for (int i = 0; i < 8; i++){
 		//only the first sevel leds light up
 		if (i < level){
@@ -35,11 +42,12 @@ void barGraph(int level){
 		}else {
 			SER::write(0);
 		}
-
+		//clock shift register
 		SRClk::high();
 		SRClk::low();
 
 	}
+	//clock holding register
 	HRClk::high();
 	HRClk::low();
 }
