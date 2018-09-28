@@ -1,10 +1,10 @@
 /*
  ============================================================================
- * @file    main.cpp (180.ARM_Peripherals/Sources/main.cpp)
- * @brief   Basic C++ demo
+ * @file    main.cpp
+ * @brief   FTM pulse
  *
- *  Created on: 10/1/2016
- *      Author: podonoghue
+ *  Created on: 27/9/18
+ *      Author: Lewis
  ============================================================================
  */
 #include "hardware.h"
@@ -12,20 +12,16 @@
 // Allow access to USBDM methods without USBDM:: prefix
 using namespace USBDM;
 
-/**
- * See more examples in Snippets directory
- */
-
-// LED connection - change as required
+// IO
 using PushButton   = GpioC<0>;
 using InputDial = GpioCField<7, 1>;
-
+//Timer
 using Timer = Ftm0;
-using TimerChannel = Ftm0Channel<5>;
+using TimerChannel = Ftm0Channel<3>;
 
 // Half-period for timer in ticks
 // This variable is shared with the interrupt routine
-static volatile uint16_t timerHalfPeriod;
+static volatile uint16_t pulseLength;
 
 // Waveform period to generate
 static constexpr float WAVEFORM_PERIOD = 100*ms;
@@ -41,8 +37,8 @@ static void ftmCallback(uint8_t status) {
 	// Check channel
 	if (status & TimerChannel::CHANNEL_MASK) {
 		// Note: The pin is toggled directly by hardware
-		// Re-trigger at last interrupt time + timerHalfPeriod
-		TimerChannel::setDeltaEventTime(timerHalfPeriod);
+		// Re-trigger at last interrupt time + pulseLength
+		TimerChannel::setDeltaEventTime(pulseLength);
 	}
 
 }
@@ -66,7 +62,7 @@ int main() {
 
 	// Calculate half-period in timer ticks
 	// Must be done after timer clock configuration (above)
-	timerHalfPeriod = Timer::convertSecondsToTicks(WAVEFORM_PERIOD/2.0);
+	pulseLength = Timer::convertSecondsToTicks(WAVEFORM_PERIOD);
 
 	// Set callback function
 	Timer::setChannelCallback(ftmCallback);
@@ -113,12 +109,13 @@ int main() {
 	PushButton::setInput();
 	InputDial::setInput();
 
-	int buttonPressed, oldButtonPressed;
+	int buttonPressed, oldButtonPressed, inputValue;
 
 	for(;;) {
 		buttonPressed = PushButton::read();
+		inputValue = InputDial::read();
 		if (buttonPressed && !oldButtonPressed){
-			//sometign is done in the handler
+			pulseLength = inputValue;
 		}
 		oldButtonPressed = buttonPressed;
 	}
