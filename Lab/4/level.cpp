@@ -1,24 +1,10 @@
 /*
  * level.cpp
- *
- *  Created on: 20 Sep 2018
- *      Author: root
  */
-
 #include "level.h"
 
-#include <stdlib.h>
 #include "lcd.h"
-#include "spi.h"
 #include "delay.h"
-#include <math.h>
-#include "system.h"
-#include "derivative.h"
-#include "hardware.h"
-#include "i2c.h"
-#include "mma845x.h"
-#include "level.h"
-#include "tone.h"
 
 using namespace USBDM;
 
@@ -27,8 +13,6 @@ Spi0 spi;
 
 // LCD interface using SPI
 Lcd lcd(spi);
-
-/* ************************************************** */
 
 /// LCD derived dimensions
 constexpr int LCD_WIDTH  = (LCD_X_MAX-LCD_X_MIN);
@@ -45,38 +29,58 @@ static constexpr int FOREGROUND_COLOUR = (WHITE);
 // Radius used for the moving circle
 constexpr int CIRCLE_RADIUS = (20);
 
-int x=0, y=0;
-int xOld=50, yOld=50;
+//Resolution of accelerometer
+constexpr int ACCELEROMETER_RANGE = 4096;
 
+//Coordiantes on LCD screen
+int x=0, y=0;
+int xOld=50, yOld=50; //old Coordinates to clear the target
+
+/*
+ * Initailise the LCD level Display
+ */
 void InitialiseLevel(){
-	// Draw Crosshair
+	//Clears the screen
 	lcd.clear(BACKGROUND_COLOUR);
 	// Set LCD defaults
-	lcd.setFont(smallFont).setForeground(FOREGROUND_COLOUR).setBackground(BACKGROUND_COLOUR);
+	lcd.setFont(smallFont).setForeground(FOREGROUND_COLOUR)
+.setBackground(BACKGROUND_COLOUR);
 	waitMS(100);
 	// Set LCD defaults
 	lcd.setFont(largeFont).setForeground(BLUE).setBackground(WHITE);
 }
 
+/*
+ * Draws the target circle to the LCD
+ */
 void drawCursor(int x, int y, int colour) {
+	//Draw Target Circle
 	lcd.drawCircle(x, y, CIRCLE_RADIUS, colour);
+	lcd.drawLine(x - CIRCLE_RADIUS, y, x + CIRCLE_RADIUS, y, colour);
+	lcd.drawLine(x, y - CIRCLE_RADIUS, x, y + CIRCLE_RADIUS, colour);
+}
+
+/*
+ * Draw a cursor on the screen
+ */
+void drawCursorOnScreen(int16_t accelX, int16_t accelY){
+	//erase the old cursor
+	drawCursor(xOld, yOld, BACKGROUND_COLOUR);
+
+	//Calculate the coordinates to draw the cursor
+	y = LCD_X_MIN + CIRCLE_RADIUS + ((+accelX + ACCELEROMETER_RANGE) *
+    (LCD_WIDTH-2*CIRCLE_RADIUS) / (2 * ACCELEROMETER_RANGE));
+	x = LCD_Y_MIN + CIRCLE_RADIUS + ((-accelY + ACCELEROMETER_RANGE) *
+    (LCD_HEIGHT-2*CIRCLE_RADIUS) / (2 * ACCELEROMETER_RANGE));
+
+	//Draw axis
 	lcd.drawLine(0,LCD_HEIGHT/2,LCD_WIDTH,LCD_HEIGHT/2,FOREGROUND_COLOUR);
 	lcd.drawLine(LCD_WIDTH/2,0,LCD_WIDTH/2,LCD_HEIGHT,FOREGROUND_COLOUR);
 
-	lcd.drawLine(x-CIRCLE_RADIUS,y,x+CIRCLE_RADIUS,y,FOREGROUND_COLOUR);
-	lcd.drawLine(x,y-CIRCLE_RADIUS,x,y+CIRCLE_RADIUS,FOREGROUND_COLOUR);
-
-}
-
-
-void drawCursorOnScreen(int16_t accelX, int16_t accelY){
-	y = LCD_X_MIN + CIRCLE_RADIUS + ((+accelX + 4095) * (LCD_WIDTH-2*CIRCLE_RADIUS) / 8200);
-			x = LCD_Y_MIN + CIRCLE_RADIUS + ((-accelY + 4095) * (LCD_HEIGHT-2*CIRCLE_RADIUS) / 8200);
-	drawCursor(xOld, yOld, BACKGROUND_COLOUR);
+	//Draw cursor
 	drawCursor(x, y, FOREGROUND_COLOUR);
-	lcd.drawLine(xOld-CIRCLE_RADIUS,yOld,xOld+CIRCLE_RADIUS,yOld,BACKGROUND_COLOUR);
-	lcd.drawLine(xOld,yOld-CIRCLE_RADIUS,xOld,yOld+CIRCLE_RADIUS,BACKGROUND_COLOUR);
 
+	//store the coordinates to erase this circle next call
 	xOld = x;
 	yOld = y;
 }
