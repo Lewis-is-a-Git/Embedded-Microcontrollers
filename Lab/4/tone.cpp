@@ -1,36 +1,26 @@
 /**
- ============================================================================
- * @file    ftm-oc-example.cpp (180.ARM_Peripherals/Snippets)
- * @brief   Demo using Ftm class to implement a basic Output Compare system
- *
- *  An FTM output generates a square wave with 100ms period
- *
- *  Created on: 3/7/2017
- *      Author: podonoghue
- ============================================================================
+ * tone.cpp
  */
-#include "hardware.h"
 #include "tone.h"
-//#include <type_traits>
+
+#include "hardware.h" //FTM
+#include <math.h> //sqrt
 
 using namespace USBDM;
 
 /**
  * This example uses FTM interrupts.
  *
- * It is necessary enable these in Configure.usbdmProject under the "Peripheral Parameters"->FTM tab
+ * It is necessary enable these in Configure.usbdmProject under the
+ * "Peripheral Parameters"->FTM tab
  * Select irqHandlingMethod option (Class Method - Software ...)
  */
 
-// Timer being used - change as required
-// Could also access as TimerChannel::Ftm
+// Timer being used
 using Timer = Ftm1;
 
-// Timer channel for output - change as required
+// Timer channel for output
 using TimerChannel = Ftm1Channel<1>;
-
-
-//static_assert(std::is_same<TimerChannel::Ftm,Timer>::value, "Timer channel must belong to same Timer!");
 
 // Half-period for timer in ticks
 // This variable is shared with the interrupt routine
@@ -49,7 +39,6 @@ static constexpr float OFFSET = 0.008;
  * @param[in] status Flags indicating interrupt source channel(s)
  */
 static void ftmCallback(uint8_t status) {
-
 	// Check channel
 	if (status & TimerChannel::CHANNEL_MASK) {
 		// Note: The pin is toggled directly by hardware
@@ -58,6 +47,11 @@ static void ftmCallback(uint8_t status) {
 	}
 }
 
+/**
+ *  Calculate the frequency based on accelerometer data
+ *  @param accelX - X axis of accelerometer
+ *  @param accelY - Y axis of accelerometer
+ */
 int calculateFrequency(int16_t accelX, int16_t accelY){
 	return sqrt((accelX * accelX) + (accelY * accelY) );
 }
@@ -65,20 +59,19 @@ int calculateFrequency(int16_t accelX, int16_t accelY){
 void initialiseNotes(void)
 {
 	/**
-	 * FTM channel set as Output compare with pin Toggle mode and using a callback function
+	 * FTM channel set as Output compare with pin Toggle mode and using
+ 	 * a callback function
 	 */
 	// Configure base FTM (affects all channels)
 	Timer::configure(
 			FtmMode_LeftAlign,      // Left-aligned is required for OC/IC
 			FtmClockSource_System,  // Bus clock usually
-			FtmPrescale_1);         // The prescaler will be re-calculated later
-
+			FtmPrescale_1);         // The prescaler will be re-calculated
 	// Set IC/OC measurement period to longest interval + 10%
 	// This adjusts the prescaler value but does not change the clock source
 	Timer::setMeasurementPeriod(1.1*WAVEFORM_PERIOD/2.0);
 
 	// Calculate half-period in timer ticks
-	// Must be done after timer clock configuration (above)
 	timerHalfPeriod = Timer::convertSecondsToTicks(WAVEFORM_PERIOD/2.0);
 
 	// Set callback function
@@ -92,25 +85,32 @@ void initialiseNotes(void)
 			PinDriveStrength_High,
 			PinDriveMode_PushPull,
 			PinSlewRate_Slow);
-	// or change individual attributes
-	//  TimerChannel::setDriveStrength(PinDriveStrength_High);
-	//  TimerChannel::setDriveMode(PinDriveMode_PushPull);
 
 	// Trigger 1st interrupt at now+100
 	TimerChannel::setRelativeEventTime(100);
 
 	// Configure the channel
 	TimerChannel::configure(
-			FtmChMode_OutputCompareToggle, //  Output Compare with pin toggle
-			FtmChannelAction_Irq);         //  + interrupts on events
+		//  Output Compare with pin toggle
+		FtmChMode_OutputCompareToggle,
+FtmChannelAction_Irq);         //  + interrupts on events
 
 	// Check if configuration failed
 	USBDM::checkError();
 }
 
+/**
+ * Changes the frequency of the note being played
+ *
+ * @param frequency - Frequency of note (100Hz-10kHz)
+ *
+ * @note This function returns immediately.
+ *       The note is played by interrupt driven code.
+ */
 void setNoteFrequency(unsigned frequency){
 	//calculate timer half period in ticks
 	if (frequency >= NOTE_MIN && frequency <= NOTE_MAX){
 		timerHalfPeriod = Timer::convertSecondsToTicks((1.0/frequency)/2.0);
 	}
 }
+
