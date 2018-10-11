@@ -13,7 +13,9 @@ using namespace USBDM;
 using Timer = Ftm0;
 using Servo   = Ftm0Channel<6>;
 
-constexpr float SERVO_PERIOD = 20.0*ms;
+constexpr float SERVO_PERIOD    = 20*ms;
+constexpr float SERVO_MIN_PULSE = 1*ms;
+constexpr float SERVO_MAX_PULSE = 2*ms;
 
 /**
  * Initialises the servo motor.
@@ -42,10 +44,14 @@ void initialiseServo(){
 	Servo::setDriveMode(PinDriveMode_PushPull);
 
 	//set the servo for output
-	Servo::setOutput();
+	Servo::setOutput(PinDriveStrength_High, PinDriveMode_PushPull, PinSlewRate_Slow);
 
 	// Check if configuration faiServo
 	checkError();
+
+	//initial position is 50%
+	setServoPosition(50);
+
 }
 /**
  * Set servo position.
@@ -54,8 +60,13 @@ void initialiseServo(){
  *
  */
 void setServoPosition(unsigned position){
+	//Defensive programming
+	if (position > 100){
+		position = 100;
+	}
+
 	//map integers 0 - 100 to 1ms - 2ms
-	Servo::setHighTime((1*ms/100)*position+(1*ms));
+	Servo::setHighTime(((SERVO_MAX_PULSE - SERVO_MIN_PULSE)/100.0) * position + (SERVO_MIN_PULSE));
 }
 
 
