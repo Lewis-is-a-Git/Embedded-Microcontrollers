@@ -12,6 +12,7 @@
 
 /** Number of data points to capture - Adjust as needed */
 constexpr unsigned DATA_POINTS = 100;
+
 /**
 * Draws data on screen (as fast as possible!)
 *
@@ -27,6 +28,7 @@ void drawGrid();
 */
 void displayInit();
 
+void displayMenu(int selection);
 
 
 #endif /* SOURCES_SCREEN_H_ */
