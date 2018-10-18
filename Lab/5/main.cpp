@@ -1,22 +1,29 @@
+/*
+ ============================================================================
+ * @file    main.cpp (180.ARM_Peripherals/Sources/main.cpp)
+ * @brief   Basic C++ demo
+ *
+ *  Created on: 10/1/2016
+ *      Author: podonoghue
+ ============================================================================
+ */
 #include "hardware.h"
-#include "pit.h"
-#include "lcd.h"
+#include "display.h"
+#include "capture.h"
 
-#include "screen.h" //display grid and menu
-#include "capture.h" //capture values form adc using pit
-#include "menu.h"  //joystick menu
-
-// Allow access to USBDM methods without USBDM:: prefix
 using namespace USBDM;
 
+
 int main() {
-	captureInit();
-	displayInit();
-
 	joystickInit();
+	drawMenu(0);
+	bool finished = false;
 
-	for(;;) {
-		readJoystick();
+	for(;;){
+		readJoyStick();
+		if (isCaptureComplete() && !finished){
+			displayData();
+			finished = true;
+		}
 	}
 }
-
