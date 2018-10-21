@@ -1,5 +1,6 @@
 /*
  * display.h
+ * This module is the LCD interface, plots the captured values to the screen.
  */
 #ifndef SOURCES_DISPLAY_H_
 #define SOURCES_DISPLAY_H_
