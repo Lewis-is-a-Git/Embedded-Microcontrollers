@@ -1,5 +1,7 @@
 /*
  * capture.h
+ * This module controls the capture functions of the program
+ * Reads the joystick inputs to control the menu
  */
 
 #ifndef SOURCES_CAPTURE_H_
