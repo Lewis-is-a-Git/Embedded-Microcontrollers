@@ -1,10 +1,7 @@
 /*
  * display.cpp
  *
- *  Created on: 17 Oct 2018
- *      Author: FAHAD
  */
-
 #include "display.h"
 #include "hardware.h"
 #include "spi.h"
@@ -30,44 +27,51 @@ static constexpr unsigned GRID_LINES = 6;
 static constexpr unsigned GRID_X_INCREMENT = (LCD_WIDTH - GRID_OFFSET) / GRID_LINES;
 static constexpr unsigned GRID_Y_INCREMENT = (LCD_HEIGHT - GRID_OFFSET) / GRID_LINES;
 
-// Colour for LCD background
-static constexpr int BACKGROUND_COLOUR = (BLACK);
-
-// Colour for LCD foreground
-static constexpr int FOREGROUND_COLOUR = (WHITE);
-
+// Colours for LCD
+static constexpr Colour BACKGROUND_COLOUR = (BLACK);
+static constexpr Colour FOREGROUND_COLOUR = (WHITE);
 static constexpr Colour DATA_COLOUR = (RED);
 static constexpr Colour GRID_COLOUR= (BLACK);
 
-void drawMenu(int menuChoice){
-
-	lcd.setFont(smallFont).setForeground(FOREGROUND_COLOUR).setBackground(BACKGROUND_COLOUR);
-	lcd.clear(BACKGROUND_COLOUR);
-	lcd.putStr("Rate = ", 10, CENTRE_Y+30, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
-
-	char* rates[] = {"1ms", "2ms", "5ms", "10ms", "20ms", "50ms", "100ms", "200ms", "500ms"};
-
-	lcd.putStr(rates[menuChoice], 20, CENTRE_Y, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
-
-}
-
-
+/**
+ * Initalise the display, clears the screen and set the font
+ */
 void displayInit(){
 	lcd.clear(BACKGROUND_COLOUR);
 	lcd.setFont(smallFont).setForeground(FOREGROUND_COLOUR).setBackground(BACKGROUND_COLOUR);
 }
 
+/**
+ * Draws the menu on the screen
+ * @param[in] menuChoice - menu item index
+ */
+void drawMenu(int menuChoice){
+	lcd.putStr("Rate = ", 10, CENTRE_Y+30, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
+
+	//array of rate lables, must match the rates array in readjoystick()
+	char* rates[] = {"1ms", "2ms", "5ms", "10ms", "20ms", "50ms", "100ms", "200ms", "500ms"};
+
+	lcd.putStr(rates[menuChoice], 20, CENTRE_Y, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
+}
+
+
+/**
+ * Draws data on screen (as fast as possible!)
+ *
+ * @param data - Array of data to plot
+ */
 void drawData(uint8_t data[DATA_POINTS]){
-	console.writeln("start of drawdata");
-	for (unsigned dataIndex = 0; dataIndex < DATA_POINTS; dataIndex++){
-		lcd.drawPixel(dataIndex + GRID_OFFSET, data[dataIndex] + GRID_OFFSET, DATA_COLOUR);
+	//loops through the array plotting on the screen
+	for (unsigned dataIndex = 0; dataIndex < DATA_POINTS - 1; dataIndex++){
+		// draw a line between the current point in the array and the previous point
 		if (dataIndex > 0){
 			lcd.drawLine((dataIndex - 1) + GRID_OFFSET, data[dataIndex - 1] + GRID_OFFSET, (dataIndex) + GRID_OFFSET, data[dataIndex] + GRID_OFFSET, DATA_COLOUR);
 		}
-		dataIndex++;
-		if (dataIndex == DATA_POINTS){dataIndex = 0;}
+		// except if it is the first point in the array just draw a dot
+		else {
+			lcd.drawPixel(dataIndex + GRID_OFFSET, data[dataIndex] + GRID_OFFSET, DATA_COLOUR);
+		}
 	}
-
 }
 
 /**
@@ -93,7 +97,7 @@ void drawGrid(){
 	lcd.putStr("10", 5, 106,FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 
 	//x axis labels
-	//covert char to int
+	// 100ms * 100 data points is 10,000ms or 10 seconds
 	lcd.putStr("0", 17, 7, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 	lcd.putStr("2", 35, 7, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 	lcd.putStr("4", 53, 7, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
@@ -102,13 +106,13 @@ void drawGrid(){
 	lcd.putStr("10", 106, 7, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 }
 
-void DrawSampling(){
-	lcd.putStr("sampling .", CENTRE_X-30, CENTRE_Y-30, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
-	lcd.putStr("sampling ..", CENTRE_X-30, CENTRE_Y-30, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
-	lcd.putStr("sampling ...", CENTRE_X-30, CENTRE_Y-30, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
-	lcd.putStr("sampling ...", CENTRE_X-30, CENTRE_Y-30, BACKGROUND_COLOUR, BACKGROUND_COLOUR);
-
-
+/**
+ * Draw a sampling animation
+ */
+void drawSampling(){
+	static int animationIndex = 0;
+	char* animation[] = {"sampling", "sampling.", "sampling..", "sampling..."};
+	lcd.putStr(animation[animationIndex], CENTRE_X-30, CENTRE_Y-30,
+			FOREGROUND_COLOUR, BACKGROUND_COLOUR);
+	animationIndex++;
 }
-
-
