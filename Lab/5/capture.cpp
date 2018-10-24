@@ -63,7 +63,7 @@ void readJoyStick(){
 			(NorthSwitch::read()<<0);
 
 	//used for rising edge detection
-	int oldSwitchValue = 0;
+	static int oldSwitchValue = 0;
 
 	//Joystick Controls
 	int noInput = 0;
@@ -149,6 +149,8 @@ void adcCallback(uint32_t value, int channel){
 	if (data[dataCounter] > MAX_DATA_VALUE){
 		data[dataCounter] = MAX_DATA_VALUE;
 	}
+	console.write("adc called datacounter = ").write(dataCounter).write(" Value = ").writeln(data[dataCounter]);
+
 	//Increment data capture counter
 	dataCounter++;
 	//Disable adc interrupts after one capture.
@@ -168,7 +170,6 @@ void  captureInit(){
 	adc::calibrate();
 	adc::setCallback(adcCallback);
 	potchannel::setInput();
-	potchannel::startConversion(AdcInterrupt_enable);
 
 	//Initialise the Simulated VDD and Ground Pins
 	vdd::setOut();
@@ -182,6 +183,7 @@ void  captureInit(){
 
 	//Check for errors
 	checkError();
+	console.writeln("capture initiliaed");
 }
 
 /**
