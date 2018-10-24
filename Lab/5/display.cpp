@@ -49,8 +49,7 @@ void drawMenu(int menuChoice){
 	lcd.putStr("Rate = ", 10, CENTRE_Y+30, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 
 	//array of rate lables, must match the rates array in readjoystick()
-	char* rates[] = {"1ms", "2ms", "5ms", "10ms", "20ms", "50ms", "100ms", "200ms", "500ms"};
-
+	char* rates[] = {"1ms  ", "2ms  ", "5ms  ", "10ms ", "20ms ", "50ms ", "100ms", "200ms", "500ms"};
 	lcd.putStr(rates[menuChoice], 20, CENTRE_Y, FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 }
 
@@ -111,8 +110,16 @@ void drawGrid(){
  */
 void drawSampling(){
 	static int animationIndex = 0;
-	char* animation[] = {"sampling", "sampling.", "sampling..", "sampling..."};
+	char* animation[] = {"sampling   ", "sampling.  ", "sampling.. ", "sampling..."};
 	lcd.putStr(animation[animationIndex], CENTRE_X-30, CENTRE_Y-30,
 			FOREGROUND_COLOUR, BACKGROUND_COLOUR);
 	animationIndex++;
+	//dont go over the end of the array
+	if (animationIndex > sizeof(animation)/sizeof(animation[0])){
+		animationIndex = 0;
+		//clear the animation
+		lcd.putStr(animation[0], CENTRE_X-30, CENTRE_Y-30,
+					FOREGROUND_COLOUR, BACKGROUND_COLOUR);
+	}
+
 }
