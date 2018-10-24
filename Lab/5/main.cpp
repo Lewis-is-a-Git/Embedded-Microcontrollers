@@ -31,5 +31,6 @@ int main() {
 			displayData();
 			finished = true;
 		}
+		console.writeln("main");
 	}
 }
